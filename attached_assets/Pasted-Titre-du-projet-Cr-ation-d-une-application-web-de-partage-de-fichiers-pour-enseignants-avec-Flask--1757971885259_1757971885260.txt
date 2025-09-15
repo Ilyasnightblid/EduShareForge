@@ -1,0 +1,112 @@
+Titre du projet : Création d'une application web de partage de fichiers pour enseignants avec Flask.
+
+Contexte :
+Je souhaite développer une application web complète, nommée "Madrassat Itzer Raiida", en utilisant Python et le framework Flask. L'application servira de plateforme sécurisée où un enseignant administrateur pourra partager des fichiers (documents Word, PPT, TXT, etc.) avec d'autres enseignants qui pourront uniquement les télécharger. Le projet doit être développé "from scratch" (à partir de zéro), inclure une base de données, et être accompagné d'un fichier README.md détaillé pour l'installation et le déploiement sur PythonAnywhere.
+
+Instructions détaillées pour la génération du code :
+1. Configuration du Projet et Technologies :
+
+Langage : Python (veuillez spécifier la version, par exemple, 3.9+).
+
+Framework : Flask.
+
+Base de données : SQLAlchemy avec SQLite pour le développement local. Expliquez comment initialiser la base de données.
+
+Structure du projet : Organisez le code de manière modulaire (par exemple, un dossier pour les templates, un pour les fichiers statiques, un fichier principal app.py, un fichier models.py pour la base de données, etc.).
+
+2. Fonctionnalités et Rôles des Utilisateurs :
+
+Il y aura deux types d'utilisateurs : Admin et Enseignant.
+
+Création de Compte et Validation par l'Admin :
+
+Un nouvel utilisateur (enseignant) peut remplir un formulaire d'inscription (nom, email, mot de passe).
+
+Son compte est créé avec un statut "en attente" (pending). Il ne peut pas se connecter tant qu'il n'est pas approuvé.
+
+L'Admin dispose d'un tableau de bord où il peut voir la liste des utilisateurs en attente.
+
+L'Admin peut approuver ou rejeter les demandes d'inscription.
+
+Si la demande est approuvée, le statut de l'utilisateur passe à "approuvé" (approved), et il peut alors se connecter. Si elle est rejetée, le compte est supprimé.
+
+Le tout premier utilisateur créé dans la base de données doit être l'Admin.
+
+Gestion des Fichiers :
+
+Seul l'Admin a le droit de téléverser (uploader) des fichiers sur la plateforme. Créez une page dédiée pour cela.
+
+Tous les utilisateurs approuvés (enseignants et admin) peuvent voir la liste des fichiers disponibles et les télécharger.
+
+Les enseignants non-admin ne doivent avoir aucun moyen de téléverser des fichiers. L'interface de téléversement doit être cachée pour eux.
+
+Authentification :
+
+Créez des pages de connexion (login) et d'inscription (register).
+
+Mettez en place une gestion de session pour que les utilisateurs restent connectés.
+
+Protégez les routes : seules les personnes connectées et approuvées peuvent accéder à la page de téléchargement, et seule la personne connectée en tant qu'admin peut accéder à la page de téléversement et de validation des comptes.
+
+3. Base de Données (avec SQLAlchemy) :
+Créez les modèles suivants :
+
+User :
+
+id (clé primaire)
+
+username (unique)
+
+email (unique)
+
+password_hash (stockez le mot de passe de manière sécurisée)
+
+role (par ex., 'admin' ou 'teacher')
+
+status (par ex., 'pending' ou 'approved')
+
+File :
+
+id (clé primaire)
+
+filename (nom du fichier)
+
+filepath (chemin de stockage du fichier sur le serveur)
+
+upload_date
+
+4. Création du Fichier README.md :
+Générez un fichier README.md complet et professionnel qui inclut les sections suivantes :
+
+Nom du Projet : Madrassat Itzer Raiida.
+
+Description : Une brève description de l'application.
+
+Structure du Projet : Un arbre montrant l'organisation des fichiers et dossiers.
+
+Prérequis :
+
+Version de Python requise (ex: Python 3.9+).
+
+Comment créer un environnement virtuel (venv).
+
+Installation Locale :
+
+Instructions pour cloner le projet depuis un dépôt Git.
+
+Comment installer les dépendances à partir du fichier requirements.txt (pip install -r requirements.txt).
+
+Comment créer et initialiser la base de données locale (ex: flask db init, flask db migrate, flask db upgrade).
+
+Comment lancer l'application en mode développement (flask run).
+
+Déploiement sur PythonAnywhere :
+
+Un guide étape par étape pour déployer l'application sur PythonAnywhere, incluant la configuration du WSGI, la gestion des fichiers statiques et la mise en place de la base de données sur le serveur.
+
+Bibliothèques Utilisées :
+
+Listez toutes les bibliothèques Python nécessaires (Flask, Flask-SQLAlchemy, Flask-Login, Werkzeug pour la sécurité des fichiers, etc.) dans un fichier requirements.txt.
+
+Objectif Final :
+Produire un projet Flask fonctionnel, bien structuré, sécurisé, et prêt à être cloné, testé localement, puis déployé, avec toute la documentation nécessaire pour qu'un autre développeur puisse le prendre en main facilement.
