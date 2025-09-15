@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Madrassat Itzer Raiida{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-graduation-cap text-primary"></i>
+                Welcome to Madrassat Itzer Raiida
+            </h1>
+            <p class="lead">A secure file sharing platform for teachers and educators</p>
+        </div>
+
+        {% if current_user.is_authenticated %}
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Welcome back, {{ current_user.username }}!</h5>
+                    {% if current_user.is_admin() %}
+                        <p class="card-text">As an administrator, you can upload files and manage user accounts.</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary me-2">
+                            <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                        </a>
+                        <a href="{{ url_for('upload_file') }}" class="btn btn-success">
+                            <i class="fas fa-upload"></i> Upload Files
+                        </a>
+                    {% else %}
+                        {% if current_user.is_approved() %}
+                            <p class="card-text">You can access and download files from the dashboard.</p>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                                <i class="fas fa-folder-open"></i> View Files
+                            </a>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock"></i>
+                                Your account is pending approval. Please wait for an administrator to approve your account.
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">New User?</h5>
+                            <p class="card-text">Register for an account to access educational resources and files.</p>
+                            <a href="{{ url_for('register') }}" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Register Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-sign-in-alt fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Existing User?</h5>
+                            <p class="card-text">Sign in to access your dashboard and download files.</p>
+                            <a href="{{ url_for('login') }}" class="btn btn-success">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <h3 class="text-center mb-4">About Our Platform</h3>
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <i class="fas fa-shield-alt fa-2x text-primary mb-3"></i>
+                        <h5>Secure</h5>
+                        <p>All files are securely stored and access is controlled by administrators.</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <i class="fas fa-users fa-2x text-primary mb-3"></i>
+                        <h5>Teacher-Focused</h5>
+                        <p>Designed specifically for educators to share and access teaching materials.</p>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <i class="fas fa-download fa-2x text-primary mb-3"></i>
+                        <h5>Easy Access</h5>
+                        <p>Simple and intuitive interface for downloading educational resources.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Files - Madrassat Itzer Raiida{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4><i class="fas fa-upload"></i> Upload Files</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.file.label(class="form-label") }}
+                        {{ form.file(class="form-control") }}
+                        {% if form.file.errors %}
+                            <div class="text-danger">
+                                {% for error in form.file.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Supported file types: TXT, PDF, PNG, JPG, JPEG, GIF, DOC, DOCX, PPT, PPTX, XLS, XLSX
+                            <br>Maximum file size: 16MB
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Once uploaded, files will be available for all approved teachers to download.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- File Upload Guidelines -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb"></i> Upload Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i>
+                        Use descriptive file names for easy identification
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i>
+                        Ensure files are appropriate for educational use
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i>
+                        Check file size is under 16MB
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-check text-success"></i>
+                        Verify file format is supported
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

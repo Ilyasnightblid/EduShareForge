@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Madrassat Itzer Raiida{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h2>
+        <p class="text-muted">Manage users and files</p>
+    </div>
+</div>
+
+<!-- Pending Users Section -->
+{% if pending_users %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user-clock"></i> Pending User Approvals ({{ pending_users|length }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Registration Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in pending_users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.created_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('approve_user', user_id=user.id) }}" style="display: inline;">
+                                        {{ approval_form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-success btn-sm"
+                                                onclick="return confirm('Approve user {{ user.username }}?')">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('reject_user', user_id=user.id) }}" style="display: inline;">
+                                        {{ approval_form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                                onclick="return confirm('Reject and delete user {{ user.username }}?')">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-upload fa-3x text-primary mb-3"></i>
+                <h5>Upload Files</h5>
+                <p>Add new files for teachers to download</p>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Files
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-info mb-3"></i>
+                <h5>User Management</h5>
+                <p>Manage teacher accounts and permissions</p>
+                <span class="badge bg-warning">{{ pending_users|length }} pending</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Files Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-folder-open"></i> Uploaded Files ({{ files|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% if files %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Upload Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in files %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-file"></i>
+                                        {{ file.original_filename }}
+                                    </td>
+                                    <td>{{ file.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('download_file', file_id=file.id) }}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No files uploaded yet.</p>
+                        <a href="{{ url_for('upload_file') }}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Your First File
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
