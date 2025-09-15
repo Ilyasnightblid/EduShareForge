@@ -1,0 +1,12 @@
+# Environnement virtuel
+venv/
+
+# Fichiers Python temporaires
+__pycache__/
+*.pyc
+
+# Base de données locale
+madrassat_itzer_raiida.db
+
+# Dossier d'uploads (si vous ne voulez pas les versionner)
+uploads/

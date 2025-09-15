@@ -7,47 +7,43 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header text-center">
-                <h4><i class="fas fa-user-plus"></i> Register for Account</h4>
+                <h4><i class="fas fa-user-plus"></i> Register for an Account</h4>
             </div>
             <div class="card-body">
-                <form method="POST">
+                <form method="POST" action="" novalidate>
+                    {{ form.hidden_tag() }}
+
                     <div class="mb-3">
-                        <label for="username" class="form-label">
-                            <i class="fas fa-user"></i> Username
-                        </label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control") }}
+                        {% for error in form.username.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
                     </div>
                     
                     <div class="mb-3">
-                        <label for="email" class="form-label">
-                            <i class="fas fa-envelope"></i> Email Address
-                        </label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                        {% for error in form.email.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
                     </div>
                     
                     <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="fas fa-lock"></i> Password
-                        </label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        {{ form.password.label(class="form-label") }}
+                        {{ form.password(class="form-control") }}
                     </div>
                     
                     <div class="mb-3">
-                        <label for="confirm_password" class="form-label">
-                            <i class="fas fa-lock"></i> Confirm Password
-                        </label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Note:</strong> New teacher accounts require approval from an administrator before you can access the platform.
+                        {{ form.confirm_password.label(class="form-label") }}
+                        {{ form.confirm_password(class="form-control") }}
+                        {% for error in form.confirm_password.errors %}
+                            <small class="text-danger">{{ error }}</small>
+                        {% endfor %}
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> Register
-                        </button>
+                        {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
             </div>

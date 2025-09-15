@@ -1,9 +1,13 @@
+# app.py CORRIGÉ
+
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, session, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_wtf import FlaskForm, CSRFProtect
-from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import SubmitField
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
+# Importez les champs de formulaire nécessaires
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -18,14 +22,13 @@ app.config['SECRET_KEY'] = os.environ.get('SESSION_SECRET', 'dev-secret-key-chan
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///madrassat_itzer_raiida.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 
 # Initialize extensions
 db = SQLAlchemy(app)
-csrf = CSRFProtect(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'  # type: ignore
+login_manager.login_view = 'login'
 
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -36,16 +39,45 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx', 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Forms
+# =====================================================================
+# DÉBUT DES CORRECTIONS : AJOUT DES CLASSES DE FORMULAIRE
+# =====================================================================
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Register')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('That username is taken. Please choose a different one.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('That email is already registered.')
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Login')
+
 class UploadForm(FlaskForm):
     file = FileField('File', validators=[
-        FileRequired(),
         FileAllowed(list(ALLOWED_EXTENSIONS), 'Invalid file type!')
     ])
     submit = SubmitField('Upload File')
 
 class ApprovalForm(FlaskForm):
     submit = SubmitField('Submit')
+
+# =====================================================================
+# FIN DES CORRECTIONS
+# =====================================================================
+
 
 # User model
 class User(UserMixin, db.Model):
@@ -87,36 +119,19 @@ def load_user(user_id):
 def index():
     return render_template('index.html')
 
+
+# =====================================================================
+# DÉBUT DES CORRECTIONS : MISE À JOUR DES ROUTES REGISTER ET LOGIN
+# =====================================================================
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-
-        # Validation
-        if not username or not email or not password:
-            flash('All fields are required.', 'error')
-            return render_template('register.html')
-
-        if password != confirm_password:
-            flash('Passwords do not match.', 'error')
-            return render_template('register.html')
-
-        if User.query.filter_by(username=username).first():
-            flash('Username already exists.', 'error')
-            return render_template('register.html')
-
-        if User.query.filter_by(email=email).first():
-            flash('Email already exists.', 'error')
-            return render_template('register.html')
-
-        # Create new user
-        user = User()
-        user.username = username
-        user.email = email
-        user.set_password(password)
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data)
+        user.set_password(form.password.data)
         
         # Check if this is the first user - make them admin
         if User.query.count() == 0:
@@ -129,30 +144,35 @@ def register():
         if user.is_admin():
             flash('Admin account created successfully. You can now log in.', 'success')
         else:
-            flash('Registration successful! Your account is pending approval from an administrator.', 'info')
+            flash('Registration successful! Your account is pending approval.', 'info')
         
         return redirect(url_for('login'))
+    return render_template('register.html', form=form)
 
-    return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        user = User.query.filter_by(username=username).first()
-
-        if user and user.check_password(password):
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and user.check_password(form.password.data):
             if user.is_approved():
                 login_user(user)
-                return redirect(url_for('dashboard'))
+                # Redirige vers la page demandée avant la connexion, ou vers le dashboard
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect(url_for('dashboard'))
             else:
-                flash('Your account is pending approval. Please wait for an administrator to approve it.', 'warning')
+                flash('Your account is pending approval.', 'warning')
         else:
             flash('Invalid username or password.', 'error')
+    return render_template('login.html', form=form)
 
-    return render_template('login.html')
+# =====================================================================
+# FIN DES CORRECTIONS
+# =====================================================================
+
 
 @app.route('/logout')
 @login_required
@@ -165,7 +185,9 @@ def logout():
 @login_required
 def dashboard():
     if not current_user.is_approved():
-        abort(403)
+        flash('Your account is not approved yet.', 'warning')
+        logout_user()
+        return redirect(url_for('login'))
 
     files = File.query.all()
     
@@ -182,14 +204,10 @@ def approve_user(user_id):
     if not current_user.is_admin():
         abort(403)
 
-    form = ApprovalForm()
-    if form.validate_on_submit():
-        user = User.query.get_or_404(user_id)
-        user.status = 'approved'
-        db.session.commit()
-        flash(f'User {user.username} has been approved.', 'success')
-    else:
-        flash('Invalid request.', 'error')
+    user = User.query.get_or_404(user_id)
+    user.status = 'approved'
+    db.session.commit()
+    flash(f'User {user.username} has been approved.', 'success')
     
     return redirect(url_for('dashboard'))
 
@@ -199,15 +217,11 @@ def reject_user(user_id):
     if not current_user.is_admin():
         abort(403)
 
-    form = ApprovalForm()
-    if form.validate_on_submit():
-        user = User.query.get_or_404(user_id)
-        username = user.username
-        db.session.delete(user)
-        db.session.commit()
-        flash(f'User {username} has been rejected and removed.', 'info')
-    else:
-        flash('Invalid request.', 'error')
+    user = User.query.get_or_404(user_id)
+    username = user.username
+    db.session.delete(user)
+    db.session.commit()
+    flash(f'User {username} has been rejected and removed.', 'info')
         
     return redirect(url_for('dashboard'))
 
@@ -219,26 +233,21 @@ def upload_file():
 
     form = UploadForm()
     
-    if form.validate_on_submit():
+    if form.validate_on_submit() and 'file' in request.files and request.files['file'].filename != '':
         file = form.file.data
-        if file and file.filename:
-            # Get file extension
+        if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file_ext = os.path.splitext(filename)[1]
-            
-            # Generate unique filename using UUID
             unique_filename = str(uuid.uuid4()) + file_ext
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            
-            # Save file
             file.save(filepath)
 
-            # Save file info to database
-            file_record = File()
-            file_record.filename = unique_filename
-            file_record.original_filename = filename
-            file_record.filepath = filepath
-            file_record.uploaded_by = current_user.id
+            file_record = File(
+                filename=unique_filename,
+                original_filename=filename,
+                filepath=filepath,
+                uploaded_by=current_user.id
+            )
             db.session.add(file_record)
             db.session.commit()
 
@@ -254,18 +263,11 @@ def download_file(file_id):
         abort(403)
 
     file_record = File.query.get_or_404(file_id)
-    
-    # Security check: ensure file path is within upload folder
     safe_path = os.path.abspath(file_record.filepath)
     upload_folder = os.path.abspath(app.config['UPLOAD_FOLDER'])
     
-    if os.path.commonpath([safe_path, upload_folder]) != upload_folder:
-        abort(403)
-    
-    # Check if file exists
-    if not os.path.exists(safe_path):
-        flash('File not found.', 'error')
-        return redirect(url_for('dashboard'))
+    if os.path.commonpath([safe_path, upload_folder]) != upload_folder or not os.path.exists(safe_path):
+        abort(404)
     
     return send_file(safe_path, as_attachment=True, download_name=file_record.original_filename)
 
