@@ -280,3 +280,11 @@ def create_tables():
 if __name__ == '__main__':
     create_tables()
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+# AJOUTEZ CE BLOC À LA FIN DE VOTRE FICHIER app.py
+
+@app.cli.command("init-db")
+def init_db_command():
+    """Crée les tables de la base de données."""
+    db.create_all()
+    print("Base de données initialisée et tables créées.")
